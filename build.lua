@@ -4,6 +4,7 @@
 -- open exoplanet catalog: https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue
 -- Big ups to them for the data, and the agencies that sourced the data
 -- All the modules below you should be able to get from luarocks.org
+-- Except for lfs which is from here https://keplerproject.github.io/luafilesystem/
 
 local xml = require('xml')
 local lfs = require('lfs')
