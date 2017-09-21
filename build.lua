@@ -1,4 +1,9 @@
 -- Recursion's pretty cool, so there's a lot of that going on
+-- Github: https://github.com/CJEnright/Exoplanets-as-table
+-- This is supposed to be used with data from the open exoplanet catalog
+-- open exoplanet catalog: https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue
+-- Big ups to them for the data, and the agencies that sourced the data
+-- All the modules below you should be able to get from luarocks.org
 
 local xml = require('xml')
 local lfs = require('lfs')
@@ -12,7 +17,7 @@ function load(path)
 	for file in lfs.dir(path) do
 		if lfs.attributes(path..file).mode == 'directory' and file ~= '.' and file ~= '..' then
 			local data = load(path..file..'/')
-			-- local data will be different per directory in the ./data directory, so we have to combine them
+			-- data will be different per directory in the ./data directory, so we have to combine them
 			for i,v in ipairs(data) do
 				table.insert(exoplanets, v)
 			end
@@ -73,7 +78,7 @@ function clean(data)
 	return data
 end
 
--- Makes all stars, binaries, and planets direct children of a system
+-- Makes all stars, binaries, and planets direct children of a system (system.stars = {...}, etc)
 -- No recursion here for simplicity
 function reparent(data)
 	for systemKey,system in pairs(data) do
@@ -131,34 +136,51 @@ function reparent(data)
 	return data
 end
 
+-- Command line argument handling
+local startingPath = lfs.currentdir()
 local inputPath = lfs.currentdir()..'/data/'
+local outputPath = lfs.currentdir()..'/output.lua'
+local shouldFix = false
+local shouldMinify = false
 
 for i=1,#arg do
 	if arg[i] == '-i' or arg[i] == '--input' then
-
+		assert(arg[i+1], 'No input path given')
+		assert(lfs.chdir(arg[i+1]), 'Unknown input path '..arg[i+1])
+		inputPath = lfs.currentdir()..'/'
 		i=i+1
 	elseif arg[i] == '-o' or arg[i] == '--output' then
-
+		lfs.chdir(startingPath)
+		assert(arg[i+1], 'No output path given')
+		local file = assert(io.open(arg[i+1], 'w'), 'meme')
+		file:close()
+		outputPath = arg[i+1]
 		i=i+1
-	elseif arg[i] == '-r' or arg[i] == '--reparent' then
-	
-	elseif arg[i] == '-c' or arg[i] == '--clean' then
-
+	elseif arg[i] == '-f' or arg[i] == '--fix' then
+		shouldFix = true
 	elseif arg[i] == '-m' or arg[i] == '--minify' then
-
+		shouldMinify = true
 	end
 end
 
+print('Loading and parsing data from '..inputPath)
 local exoplanets = load(inputPath)
-exoplanets = clean(exoplanets)
-exoplanets = reparent(exoplanets)
 
-local file = io.open('output.lua', 'w')
-file:write("return ")
-file:write(serpent.block(exoplanets,  {comment = false}))
+if shouldFix then
+	print('Fixing data formatting')
+	exoplanets = reparent(clean(exoplanets))
+end
+
+lfs.chdir(startingPath)
+local file = io.open(outputPath, 'w')
+file:write('return ')
+
+print('Writing table to file')
+if shouldMinify then
+	file:write(serpent.line(exoplanets,  {comment = false}))
+else
+	file:write(serpent.block(exoplanets,  {comment = false}))	
+end
+
 file:close()
-
---[[
-clean will always be called before 
-]]
-
+print('Done, output written to '..outputPath)
