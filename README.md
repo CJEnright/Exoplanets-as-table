@@ -14,7 +14,7 @@ Assuming lua and all this programs dependencies are installed you only need to r
  * ```-i ./path/to/data/folder``` or ```--input ./path/to/data/folder``` sets the data input directory  
  * ```-o ./path/to/output/file.lua``` or ```--output ./path/to/output/file.lua``` sets the table output directory  
  * ```-f``` or ```--fix``` cleans up, reparents data, and removes some fields like videolink and description  
- * ```-m``` or ```-minify``` makes the ouput table smaller, but also less readable  
+ * ```-m``` or ```--minify``` makes the ouput table smaller, but also less readable  
 
 ### Where do I get the data from?
 The [open exoplanet catalog](https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue).  Put the two folders "systems" and "systems_kepler" into a directory and point build.lua to that directory with the ```-i``` argument.
